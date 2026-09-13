@@ -4,26 +4,34 @@
  * @return {number}
  */
 var largestOverlap = function(img1, img2) {
-    const setImg1 = new Set();
-    const setImg2 = new Set();
-    for (let i = 0; i < img1.length; i++) {
-        for (let j = 0; j < img1.length; j++) {
-            if (img1[i][j]) setImg1.add(`${i}_${j}`);
-            if (img2[i][j]) setImg2.add(`${i}_${j}`);
+    return useDuplicatedSpace(img1, img2);
+};
+
+const useDuplicatedSpace = function(img1, img2) {
+    const n = img1.length;
+
+    const m = 3 * n - 2;
+    let backdrop = Array.from({ length: m }, () => new Array(m).fill(0));
+
+    for (let i = n - 1; i <= 2 * n - 2; i++) {
+        for (let j = n - 1; j <= 2 * n - 2; j++) {
+            backdrop[i][j] = img2[i - n + 1][j - n + 1];
         }
     }
-    let output = 0;
-    
-    for (let i = -(img1.length - 1); i < img1.length; i++) {
-        for (let j = -(img1.length - 1); j < img1.length; j++) {
+
+    let ans = 0;
+    for (let i = 0; i <= m - n; i++) {
+        for (let j = 0; j <= m - n; j++) {
             let count = 0;
-            setImg1.forEach(key => {
-                const [x, y] = key.split('_');
-                if (setImg2.has(`${Number(x) + i}_${Number(y) + j}`)) count++;
-            })
-            output = Math.max(output, count);
+            for (let u = i; u < i + n; u++) {
+                for (let v = j; v < j + n; v++) {
+                    if (img1[u - i][v - j] * backdrop[u][v] === 1) {
+                        count++;
+                    }
+                }
+            }
+            ans = Math.max(ans, count);
         }
     }
-    
-    return output;
+    return ans;
 };
