@@ -3,5 +3,9 @@
  * @param {number[]} rec2
  * @return {boolean}
  */
-const isRectangleOverlap = ([x1, y1, x2, y2], [X1, Y1, X2, Y2]) =>
-    x1 < X2 && X1 < x2 && y1 < Y2 && Y1 < y2;
+var isRectangleOverlap = function(rec1, rec2) {
+    return !(rec1[2] <= rec2[0] ||
+             rec1[0] >= rec2[2] ||
+             rec1[3] <= rec2[1] ||
+             rec1[1] >= rec2[3]);
+};
