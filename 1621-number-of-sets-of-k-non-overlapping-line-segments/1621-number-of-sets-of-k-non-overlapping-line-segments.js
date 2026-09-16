@@ -3,22 +3,13 @@
  * @param {number} k
  * @return {number}
  */
-var numberOfSets = function (n, k) {
-    const MOD = 1000000007n;
-    const pow = (a, e) => {
-        let result = 1n;
-        while (e > 0n) {
-            if (e & 1n) result = (result * a) % MOD;
-            a = (a * a) % MOD;
-            e >>= 1n;
-        }
-        return result;
-    };
-    let numerator = 1n,
-        denominator = 1n;
-    for (let i = 1; i <= 2 * k; i++) {
-        numerator = (numerator * BigInt(n + k - i)) % MOD;
-        denominator = (denominator * BigInt(i)) % MOD;
-    }
-    return Number((numerator * pow(denominator, MOD - 2n)) % MOD);
+var numberOfSets = function(n, k) {
+    return combinations(n+k-1,2*k)%(1e9+7)
 };
+var combinations=(n,k)=>{
+    var dp=[...Array(n+1)].map(d=>[...Array(k+1)].map(d=>1))
+    for (let i = 1; i <=n; i++) 
+        for (let k = 1; k <i; k++)
+            dp[i][k]=(dp[i-1][k-1]+dp[i-1][k]) %(1e9+7)     
+    return dp[n][k]
+}
