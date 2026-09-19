@@ -9,10 +9,12 @@
  * @return {boolean}
  */
 
-const {max , min} = Math;
-const checkOverlap = (r, cx, cy, x1, y1, x2, y2) => {
-    const x = max(x1, min(cx, x2)) - cx;
-    const y = max(y1, min(cy, y2)) - cy;
+var checkOverlap = function(radius, xCenter, yCenter, x1, y1, x2, y2) {
+    let nearX = Math.max(x1, Math.min(xCenter, x2));
+    let nearY = Math.max(y1, Math.min(yCenter, y2));
 
-    return x * x + y * y <= r * r;
+    let diffX = xCenter - nearX;
+    let diffY = yCenter - nearY;
+
+    return diffX * diffX + diffY * diffY <= radius * radius;
 };
