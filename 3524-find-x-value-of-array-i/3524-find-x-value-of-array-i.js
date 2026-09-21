@@ -3,20 +3,22 @@
  * @param {number} k
  * @return {number[]}
  */
-var resultArray = function(nums, k) {
-    const result = new Array(k).fill(0);
-    let state = new Array(k).fill(0);
-    for (const value of nums) {
-        const rem = value % k;
-        const nextState = new Array(k).fill(0);
-        for (let r = 0; r < k; r++) {
-            const newRem = (r * rem) % k;
-            nextState[newRem] += state[r];
-            result[newRem] += state[r];
-        }
-        nextState[rem]++;
-        result[rem]++;
-        state = nextState;
+var resultArray = function(A, k) {
+    const res = new Float64Array(k);
+    let freq = new Int32Array(k);
+
+    for (let n of A) {
+        n %= k;
+        const cur = new Int32Array(k);
+        
+        cur[n] = 1;
+        for (let i = 0; i < k; i++) 
+            cur[(i * n) % k] += freq[i];        
+
+        freq = cur;
+        for (let i = 0; i < k; i++) 
+            res[i] += freq[i];        
     }
-    return result;
+
+    return res;
 };
