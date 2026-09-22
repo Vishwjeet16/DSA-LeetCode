@@ -5,105 +5,142 @@
  * @return {number[]}
  */
 var resultArray = function(nums, k, queries) {
-    const n = nums.length;
-    const treeProd = new Int32Array(4 * n);
-    const treeFreq = Array.from({ length: 4 * n }, () => new Int32Array(k));
+    let size = 1;
 
-    function merge(pL, fL, pR, fR, pRes, fRes) {
-        pRes[0] = (pL[0] * pR[0]) % k;
-        for (let i = 0; i < k; i++) fRes[i] = fL[i];
+    while (size < nums.length) {
+        size <<= 1;
+    }
+
+    const cnt = new Int32Array(2 * size * k);
+    const prod = new Int32Array(2 * size);
+
+    for (let i = 0; i < nums.length; i++) {
+        const r = nums[i] % k;
+        const node = size + i;
+
+        cnt[node * k + r] = 1;
+        prod[node] = r;
+    }
+
+    function merge(node, left, right) {
+        const nb = node * k;
+        const lb = left * k;
+        const rb = right * k;
+
         for (let r = 0; r < k; r++) {
-            if (fR[r] !== 0) {
-                const nr = (pL[0] * r) % k;
-                fRes[nr] += fR[r];
-            }
+            cnt[nb + r] = cnt[lb + r];
+        }
+
+        for (let r = 0; r < k; r++) {
+            if (cnt[rb + r] === 0) continue;
+
+            const nr = (prod[left] * r) % k;
+            cnt[nb + nr] += cnt[rb + r];
+        }
+
+        prod[node] = (prod[left] * prod[right]) % k;
+    }
+
+    for (let i = size - 1; i > 0; i--) {
+        merge(i, i * 2, i * 2 + 1);
+    }
+
+    function update(idx, val) {
+        let node = size + idx;
+        const r = val % k;
+        const base = node * k;
+
+        for (let x = 0; x < k; x++) {
+            cnt[base + x] = 0;
+        }
+
+        cnt[base + r] = 1;
+        prod[node] = r;
+
+        node >>= 1;
+
+        while (node > 0) {
+            merge(node, node * 2, node * 2 + 1);
+            node >>= 1;
         }
     }
 
-    function build(v, tl, tr) {
-        if (tl === tr) {
-            treeProd[v] = nums[tl] % k;
-            treeFreq[v][treeProd[v]] = 1;
-            return;
-        }
-        const tm = (tl + tr) >> 1;
-        build(v << 1, tl, tm);
-        build(v << 1 | 1, tm + 1, tr);
-        const pL = treeProd[v << 1], fL = treeFreq[v << 1];
-        const pR = treeProd[v << 1 | 1], fR = treeFreq[v << 1 | 1];
-        treeProd[v] = (pL * pR) % k;
-        const fRes = treeFreq[v];
-        fRes.fill(0);
-        for (let i = 0; i < k; i++) fRes[i] = fL[i];
-        for (let r = 0; r < k; r++) {
-            if (fR[r]) {
-                const nr = (pL * r) % k;
-                fRes[nr] += fR[r];
+    function query(l, r) {
+        const lc = new Int32Array(k);
+        const rc = new Int32Array(k);
+        const tmp = new Int32Array(k);
+
+        let lp = 1;
+        let rp = 1;
+
+        l += size;
+        r += size;
+
+        while (l < r) {
+            if (l & 1) {
+                const base = l * k;
+
+                for (let x = 0; x < k; x++) {
+                    tmp[x] = lc[x];
+                }
+
+                for (let x = 0; x < k; x++) {
+                    if (cnt[base + x] === 0) continue;
+
+                    const nr = (lp * x) % k;
+                    tmp[nr] += cnt[base + x];
+                }
+
+                for (let x = 0; x < k; x++) {
+                    lc[x] = tmp[x];
+                }
+
+                lp = (lp * prod[l]) % k;
+                l++;
             }
+
+            if (r & 1) {
+                --r;
+
+                const base = r * k;
+
+                for (let x = 0; x < k; x++) {
+                    tmp[x] = cnt[base + x];
+                }
+
+                for (let x = 0; x < k; x++) {
+                    if (rc[x] === 0) continue;
+
+                    const nr = (prod[r] * x) % k;
+                    tmp[nr] += rc[x];
+                }
+
+                for (let x = 0; x < k; x++) {
+                    rc[x] = tmp[x];
+                }
+
+                rp = (prod[r] * rp) % k;
+            }
+
+            l >>= 1;
+            r >>= 1;
         }
+
+        for (let x = 0; x < k; x++) {
+            tmp[x] = lc[x];
+        }
+
+        for (let x = 0; x < k; x++) {
+            if (rc[x] === 0) continue;
+
+            const nr = (lp * x) % k;
+            tmp[nr] += rc[x];
+        }
+
+        return tmp;
     }
 
-    function update(v, tl, tr, pos, val) {
-        if (tl === tr) {
-            treeProd[v] = val % k;
-            treeFreq[v].fill(0);
-            treeFreq[v][treeProd[v]] = 1;
-            return;
-        }
-        const tm = (tl + tr) >> 1;
-        if (pos <= tm) update(v << 1, tl, tm, pos, val);
-        else update(v << 1 | 1, tm + 1, tr, pos, val);
-
-        const pL = treeProd[v << 1], fL = treeFreq[v << 1];
-        const pR = treeProd[v << 1 | 1], fR = treeFreq[v << 1 | 1];
-        treeProd[v] = (pL * pR) % k;
-        const fRes = treeFreq[v];
-        fRes.fill(0);
-        for (let i = 0; i < k; i++) fRes[i] = fL[i];
-        for (let r = 0; r < k; r++) {
-            if (fR[r]) {
-                const nr = (pL * r) % k;
-                fRes[nr] += fR[r];
-            }
-        }
-    }
-
-    function query(v, tl, tr, l, r, outFreq, outProd) {
-        if (l > r) {
-            outProd[0] = 1;
-            outFreq.fill(0);
-            return;
-        }
-        if (l === tl && r === tr) {
-            outProd[0] = treeProd[v];
-            for (let i = 0; i < k; i++) outFreq[i] = treeFreq[v][i];
-            return;
-        }
-        const tm = (tl + tr) >> 1;
-        const leftFreq = new Int32Array(k);
-        const rightFreq = new Int32Array(k);
-        const leftProd = new Int32Array(1);
-        const rightProd = new Int32Array(1);
-
-        query(v << 1, tl, tm, l, Math.min(r, tm), leftFreq, leftProd);
-        query(v << 1 | 1, tm + 1, tr, Math.max(l, tm + 1), r, rightFreq, rightProd);
-
-        outProd[0] = (leftProd[0] * rightProd[0]) % k;
-        outFreq.fill(0);
-        for (let i = 0; i < k; i++) outFreq[i] = leftFreq[i];
-        for (let r = 0; r < k; r++) {
-            if (rightFreq[r]) {
-                const nr = (leftProd[0] * r) % k;
-                outFreq[nr] += rightFreq[r];
-            }
-        }
-    }
-
-    build(1, 0, n - 1);
-
-    const ans = new Array(queries.length);
-    const tempFreq = new Int32Array(k);
-    const tempProd = new Int32Array(1);
+    const answer = new Array(queries.length);
 
     for (let i = 0; i < queries.length; i++) {
         const idx = queries[i][0];
@@ -111,9 +148,11 @@ var resultArray = function(nums, k, queries) {
         const start = queries[i][2];
         const x = queries[i][3];
 
-        update(1, 0, n - 1, idx, val);
-        query(1, 0, n - 1, start, n - 1, tempFreq, tempProd);
-        ans[i] = tempFreq[x];
+        update(idx, val);
+
+        const cur = query(start, nums.length);
+        answer[i] = cur[x];
     }
-    return ans;
+
+    return answer;
 };
