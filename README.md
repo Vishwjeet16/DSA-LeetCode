@@ -27,6 +27,7 @@ A collection of LeetCode questions to ace the coding interview! - Created using 
 ## Math
 |  |
 | ------- |
+| [0007-reverse-integer](https://github.com/Vishwjeet16/DSA-LeetCode/tree/master/0007-reverse-integer) |
 | [0836-rectangle-overlap](https://github.com/Vishwjeet16/DSA-LeetCode/tree/master/0836-rectangle-overlap) |
 | [1401-circle-and-rectangle-overlapping](https://github.com/Vishwjeet16/DSA-LeetCode/tree/master/1401-circle-and-rectangle-overlapping) |
 | [1621-number-of-sets-of-k-non-overlapping-line-segments](https://github.com/Vishwjeet16/DSA-LeetCode/tree/master/1621-number-of-sets-of-k-non-overlapping-line-segments) |
